@@ -23,13 +23,26 @@ module.exports.createNewPurchases = (req, res) => {
 }
 
 module.exports.updatePurchasesInfo = (req, res) => {
+
   if (Object.keys(req.body).length === 0) {
     return res.send('Not send data');
   }
-  const { _id, text, date, price } = req.body;
+  let { ...obj } = req.body;
+  if (obj.date) {
+    obj.date = obj.date.split('-').reverse();
+    obj.date = `${obj.date[0]}-${obj.date[1]}-${obj.date[2]}`;
+  }
+  else {
+    const dateObj = new Date();
+    const month = dateObj.getUTCMonth() + 1; //months from 1-12
+    const day = dateObj.getUTCDate();
+    const year = dateObj.getUTCFullYear();
+    obj.date = `${("0" + day).slice(-2)}-${("0" + month).slice(-2)}-${year}`;
+  }
+
   Purchases.updateOne(
-    { _id },
-    { text, date, price },
+    { _id: obj._id },
+    { ...obj },
   ).then(r => {
     res.send(r);
   }).catch(err => res.send(new Error(err)));
